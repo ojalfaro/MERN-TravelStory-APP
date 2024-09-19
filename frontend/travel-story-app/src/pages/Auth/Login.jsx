@@ -1,16 +1,25 @@
 import React, { useState } from 'react'
 import PasswordInput from '../../components/Input/PasswordInput.jsx'
 import { useNavigate } from 'react-router-dom';
+import {validateEmail} from '../../utils/helper.js'
 
  const Login = ()  => {
 
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
   const [error,setError] = useState(null);
+  
 
   const navigate = useNavigate()
 
-  const handleLogin = async (e) => {}
+  const handleLogin = async (e) => {
+    e.preventDefault()
+
+    if(!validateEmail(email)){
+      setError("please enter a valid email addres.")
+      return
+    }
+  }
 
   return (
     <div className='h-screen bg-cyan-50 overflow-hidden relative'>
@@ -46,6 +55,8 @@ import { useNavigate } from 'react-router-dom';
             onChange={({target}) => {
               setPassword(target.value);
             }}/>
+
+            {error && <p className='text-red-500 text-xs pb-1'>{error}</p>}
 
             <button type='submit' className='btn-primary'>
               Login
