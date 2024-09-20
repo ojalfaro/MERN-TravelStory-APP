@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import PasswordInput from '../../components/Input/PasswordInput.jsx'
 import { useNavigate } from 'react-router-dom';
 import {validateEmail} from '../../utils/helper.js'
+import axiosIntance from '../../utils/axiosinstance.js'
 
  const Login = ()  => {
 
@@ -19,6 +20,41 @@ import {validateEmail} from '../../utils/helper.js'
       setError("please enter a valid email addres.")
       return
     }
+
+    if(!password) {
+      setError("Please enter the password")
+      return
+    }
+    setError("")
+
+    //login API Call
+    try{
+      const response = await axiosIntance.post("/login", {
+        email: email,
+        password:password,
+      })
+
+      console.log(response)
+      //handle successfully login response
+      if(response.data && response.data.acccesToken){
+        localStorage.setItem("token", response.data.acccesToken)
+        navigate("/dashboard")
+      }
+    }
+    catch(error){
+      //handle login error
+      if(
+      error.response &&
+      error.response.data &&
+      error.response.data.message
+    ){
+      setError(error.response.data.message)
+    }
+    else{
+      setError("An unexpected error ocurred. Please try again.")
+    }
+    }
+    
   }
 
   return (
