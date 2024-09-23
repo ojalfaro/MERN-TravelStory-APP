@@ -172,6 +172,7 @@ app.post('/upload-image',upload.single("image") , async(req,res) => {
     }
 })
 
+
 //ruote ti handle image delete
 app.delete('/delete-image', async(req,res) => {
     const {imageUrl} = req.query
@@ -214,8 +215,8 @@ app.delete('/delete-image', async(req,res) => {
 
 })
 
-app.use("uploads",express.static(path.join(__dirname,"uploads")))
-app.use("assets",express.static(path.join(__dirname,"assets")))
+app.use("/uploads",express.static(path.join(__dirname,"uploads")))
+app.use("/assets",express.static(path.join(__dirname,"assets")))
 
 //add travel story
 app.post('/add-travel-story',authenticationToken , async(req,res) => {
