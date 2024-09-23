@@ -13,7 +13,8 @@ const TravelStoryCard = ({imgUrl, title, story, date, visitedLocation, isFavouri
        onClick={onClick}
        />
 
-       <button className='w-12 h-12 flex items-center justify-center bg-white/40 rounded-lg border border-white/30 absolute top-4 right-4' onClick={onClick}>
+       <button className='w-12 h-12 flex items-center justify-center bg-white/40 rounded-lg border border-white/30 absolute top-4 right-4' 
+       onClick={onFavouriteClick}>
           <FaHeart className={`icons-btn ${isFavourite ? "text-red-500"  : "text-white "} `} />
        </button>
        

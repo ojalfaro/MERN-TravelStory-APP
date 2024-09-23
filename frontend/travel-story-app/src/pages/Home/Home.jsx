@@ -2,13 +2,26 @@ import React, { useEffect, useState } from 'react'
 import Navbar from '../../components/Navbar'
 import { useNavigate } from 'react-router-dom'
 import axiosIntance from '../../utils/axiosinstance'
+import Modal from 'react-modal'
 import TravelStoryCard from '../../components/Cards/TravelStoryCard'
+import AddEdditTravelStory from '../Home/AddEdditTravelStory'
+import {MdAdd} from 'react-icons/md'
 
+
+import { ToastContainer,toast } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 const Home = () => {
 
   const navigate = useNavigate()
+
   const [userInfo,setUserInfo] = useState(null)
   const [allStories,setAllstories] = useState([])
+
+  const [opennAddEditModel,setOpennAddEditModel] = useState({
+    isShown:false,
+    type:"add",
+    data:null,
+  })
 
   //get user info
   const getUserInfo = async() => {
@@ -55,10 +68,32 @@ const Home = () => {
   const handleViewStory = (data) => {}
 
   //handle update favourite
-  const updateIsFavourite = async (storyData) => {}
+  const updateIsFavourite = async (storyData) => {
+    const storyId = storyData._id
+  try{
+    const response = await axiosIntance.put(
+      "/update-is-favourite/" + storyId,
+      {
+        isFavourite: !storyData.isFavourite,
+      }
+    );
+    // console.log("response.data.stories1")
+    // console.log(response.data)
+    // console.log(response.data.stories)
+
+      if(response.data && response.data.stories){
+        toast.success('traves update successfully')
+        // console.log("response.data.stories")
+        getAllTravelsStories();
+      }
+    
+
+  } catch(error){
+    console.log("an unexpected error ocurred. please try again.")
+  }
 
 
-
+  }
   useEffect(() => {
     getAllTravelsStories()
     getUserInfo()
@@ -108,6 +143,38 @@ const Home = () => {
 
       </div>
 
+
+      <Modal 
+        isOpen={opennAddEditModel.isShown}
+        onRequestClose={()=> {}}
+        style={{
+          overlay:{
+            backgroundColor: 'rgba(0,0,0,0.2)',
+            zIndex:999,
+          }
+        }}
+        appElement={document.getElementById('root')}
+        className="model-box"
+      >
+      <AddEdditTravelStory 
+        type={opennAddEditModel.type}
+        storyInfo={opennAddEditModel.data}
+        onClose={() => {
+          setOpennAddEditModel({isShown:false,type:"add",data:null})
+        }}
+        getAllTravelsStories={getAllTravelsStories}
+      />
+      </Modal>
+
+      <button className='w-16 h-16 flex items-center justify-center rounded-full bg-primary hover:bg-cyan-400 fixed right-10 bottom-10' 
+      onClick={() => {
+        setOpennAddEditModel({isShown:true,type:"add",data:null})
+      }}>
+        <MdAdd className='text-[32px] text-white'/>
+
+      </button>
+
+      <ToastContainer />
     </>
   )
 }
