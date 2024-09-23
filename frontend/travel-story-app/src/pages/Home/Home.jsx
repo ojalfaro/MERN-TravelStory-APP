@@ -51,7 +51,7 @@ const Home = () => {
       if(response.data && response.data.stories){
         //set user info if user exists
         setAllstories(response.data.stories)
-        console.log(response.data.stories)
+       // console.log(response.data.stories)
         
       }
 
