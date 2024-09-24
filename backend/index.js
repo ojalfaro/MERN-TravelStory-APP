@@ -159,7 +159,7 @@ app.post('/upload-image',upload.single("image") , async(req,res) => {
         }
 
         const imageUrl = `http://localhost:8000/uploads/${req.file.filename}`
-        return res.status(201).json({
+        return res.status(200).json({
             imageUrl
         })
 
@@ -291,7 +291,7 @@ app.put('/update-travel-stories/:id',authenticationToken , async(req,res) => {
     const {userId} = req.user
 
     //validate required fields
-    if(!title || !story || !visitedLocation || !imageUrl || !visitedDate ){
+    if(!title || !story || !visitedLocation || !visitedDate ){
         return res.status(400).json({
             success:false,
             message:'All fields al required'

@@ -146,7 +146,29 @@ const AddEdditTravelStory = ({
 
     //delete story image an update the stoy
     const handleDeleteStoryImg = async () => {
-        
+        console.log(storyInfo)
+        const deleteImgRes = await axiosIntance.delete("/delete-image",{
+            params: {
+                imageUrl : storyInfo.imageUrl,
+            },
+        })
+        console.log(imageUrl)
+        if(deleteImgRes.data){
+            const storyId = storyInfo._id
+
+            const postData = {
+                title,
+                story,
+                visitedLocation,
+                visitedDate:  moment(visitedDate).valueOf(),
+                imageUrl:""
+
+            }
+
+            //update story
+            const response = await axiosIntance.put("/update-travel-stories/"+storyId,postData)
+            setStoryimg(null)
+        }
     }
 
   return (
