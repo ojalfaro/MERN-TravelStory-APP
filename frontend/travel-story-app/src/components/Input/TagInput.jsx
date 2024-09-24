@@ -5,10 +5,14 @@ import { GrMapLocation } from 'react-icons/gr'
 
 const TagInput = ({tags,setTags}) => {
 
-    const [inputValue,setInputValue] = useState(null)
+    const [inputValue,setInputValue] = useState("")
+
     const addNewTag = () => {
-        setTags([...tags,inputValue.trim()])
+        if(inputValue.trim() !== ""){
+            setTags([...tags,inputValue.trim()])
         setInputValue("")
+        }
+        
     }
 
     const handleInputChange = (e) => {

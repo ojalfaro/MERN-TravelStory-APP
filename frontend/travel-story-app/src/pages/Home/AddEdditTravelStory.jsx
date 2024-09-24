@@ -15,24 +15,26 @@ const AddEdditTravelStory = ({
     getAllTravelsStories
 }) => {
 
-    const [title,setTitle] = useState("")
-    const [storyimg,setStoryimg] = useState(null)
-    const [story,setStory] = useState("")
-    const [visitedLocation,setVisitedLocation] = useState([])
-    const [visitedDate,setVisitedDate] = useState(null)
+    const [title,setTitle] = useState(storyInfo?.title || "")
+    const [storyimg,setStoryimg] = useState(storyInfo?.imageUrl || null)
+    const [story,setStory] = useState(storyInfo?.story || "")
+    const [visitedLocation,setVisitedLocation] = useState(storyInfo?.visitedLocation || [])
+    const [visitedDate,setVisitedDate] = useState(storyInfo?.visitedDate || null)
     const [error,setError] = useState("")
 
     //add new travel story
     const addNweTravelStory = async () => {
         try {
-        let imageUrl =""
+        //console.log("input data: ",{title,storyimg,story,visitedLocation,visitedDate})
         
-        if(storyImg){
-            const imagUpoadsRes = await uploadImage(storyImg)
-
+        let imageUrl =""
+        //console.log("input storyImg: ", {storyimg})
+        if(storyimg){
+            const imagUpoadsRes = await uploadImage(storyimg)
+            console.log(imagUpoadsRes)
             imageUrl = imagUpoadsRes.imageUrl || ""
         }
-        //console.log("input data: ",{title,storyimg,story,visitedLocation,visitedDate})
+        //console.log(imageUrl)
         const response = await axiosIntance.post("/add-travel-story",{
             title,
             story,
@@ -42,8 +44,8 @@ const AddEdditTravelStory = ({
             ? moment(visitedDate).valueOf()
             : moment().valueOf(),
         })
-
-        if(response.data && response.data.stories){
+       // console.log(response.data)
+        if(response.data /*&& response.data.story*/){
             toast.success("story added successfully");
 
                 getAllTravelsStories();
@@ -53,12 +55,71 @@ const AddEdditTravelStory = ({
         }
         }
         catch(error){
-            console.error("an ocurred error, try again")
+            if(error.response &&
+                error.response.data && 
+                error.response.data.message
+            ){
+                setError(error.response.data.message)
+            }
+            else{
+                setError("An unexpected error ocurred. Please try again ")
+            }
         }
     }
 
     //update travel story
-    const updateTravelStory = () => {}
+    const updateTravelStory = async () => {
+        const storyId = storyInfo._id
+        try {
+            //console.log("input data: ",{title,storyimg,story,visitedLocation,visitedDate})
+            
+            let imageUrl =""
+
+            let postData ={
+                title,
+                story,
+                imageUrl:storyInfo.imageUrl || "",
+                visitedLocation,
+                visitedDate: visitedDate
+                ? moment(visitedDate).valueOf()
+                : moment().valueOf(),
+            }
+            if(typeof storyimg ==='object'){
+                //upload new image
+                const imagUpoadsRes = await uploadImage(storyimg);
+                imageUrl = imagUpoadsRes.imageUrl || "";
+
+                postData = {
+                    ...postData,
+                    imageUrl:imageUrl
+                }
+            }
+
+
+            //console.log(imageUrl)
+            const response = await axiosIntance.put("/update-travel-stories/"+storyId,postData)
+           // console.log(response.data)
+            if(response.data /*&& response.data.story*/){
+                toast.success("story updated successfully");
+    
+                    getAllTravelsStories();
+    
+                    onClose();
+                
+            }
+            }
+            catch(error){
+                if(error.response &&
+                    error.response.data && 
+                    error.response.data.message
+                ){
+                    setError(error.response.data.message)
+                }
+                else{
+                    setError("An unexpected error ocurred. Please try again ")
+                }
+            }
+    }
 
     const handleAddOrUpdateClick = () => {
         console.log("input data: ",{title,storyimg,story,visitedLocation,visitedDate})
@@ -89,7 +150,7 @@ const AddEdditTravelStory = ({
     }
 
   return (
-    <div>
+    <div className='relative'>
         <div className='flex items-center justify-between'>
             <h5 className='text-xl font-medium text-slate-700'>
                 {type==="add" ? "add story" : "update story"}
@@ -144,6 +205,7 @@ const AddEdditTravelStory = ({
                 <ImageSelector
                     image={storyimg}
                     setImage={setStoryimg}
+                    handleDeleteImg={handleDeleteStoryImg}
                 />
 
                 <div className='flex flex-col gap-2 mt-4'>
