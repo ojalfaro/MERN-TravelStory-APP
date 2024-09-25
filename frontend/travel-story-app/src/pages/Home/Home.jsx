@@ -6,17 +6,28 @@ import Modal from 'react-modal'
 import TravelStoryCard from '../../components/Cards/TravelStoryCard'
 import AddEdditTravelStory from '../Home/AddEdditTravelStory'
 import ViewTravelStory from '../Home/ViewTravelStory'
+import EmtyCard from '../../components/Cards/EmtyCard'
 import {MdAdd} from 'react-icons/md'
+import EmtyImg from '../../assets/images/react.svg'
+import FilterInfoTitle from '../../components/Cards/FilterInfoTitle'
+import {getEmptyCardMessage,getEmptyCardImg} from '../../utils/helper'
 
 
 import { ToastContainer,toast } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
+import { DayPicker } from 'react-day-picker'
+import moment from 'moment/moment'
 const Home = () => {
 
   const navigate = useNavigate()
 
   const [userInfo,setUserInfo] = useState(null)
   const [allStories,setAllstories] = useState([])
+
+  const [searchQuery,setSearchQuery] = useState('')
+  const [filterType,setFilterType] = useState('')
+
+  const [dateRange,setDateRange] = useState(null /*from:null,to:null*/)
 
   const [opennAddEditModel,setOpennAddEditModel] = useState({
     isShown: false,
@@ -94,7 +105,15 @@ const Home = () => {
       if(response.data && response.data.stories){
         toast.success('traves update successfully')
         // console.log("response.data.stories")
+        if(filterType==='search' && searchQuery){
+          onSearchStory(searchQuery)
+        }
+        else if (filterType ==='date'){
+          filterStoryByDate(dateRange)
+        }
+        else{
         getAllTravelsStories();
+      }
       }
     
 
@@ -104,6 +123,88 @@ const Home = () => {
 
 
   }
+
+  //delete story
+  const deleteTravelStory = async (data) => {
+    const storyId = data._id
+
+    try 
+    {
+      const response = await axiosIntance.delete("/delete-travel-stories/"+storyId)
+      console.log(response.data)
+      if(response.data && !response.data.error)
+      {
+        toast.error("story deleted successfully")
+        setOpenViewModel((prevState) => ({...prevState,isShown:false}))
+        getAllTravelsStories()
+      }
+    }
+    catch(error){
+      console.log("An ocurred error during deleted, try again ",error)
+    }
+  }
+
+  //search story
+  const onSearchStory = async (query) => {
+    try 
+    {
+      const response = await axiosIntance.get("/search",{
+        params: {
+          query
+        }
+      })
+      //console.log(response.data)
+      if(response.data && response.data.stories)
+      {
+        setFilterType("search")
+        setAllstories(response.data.stories)
+      }
+    }
+    catch(error){
+      console.log("An ocurred error during deleted, try again ",error)
+    }
+  }
+
+  const handleClearSearch = () => {
+    setFilterType("")
+    getAllTravelsStories()
+  }
+
+  const filterStoryByDate = async(day) => {
+    try{
+      const starTDate = day.from ? moment(day.from).valueOf() : null
+      const endDate = day.to ? moment(day.to).valueOf() : null
+
+      if(starTDate && endDate){
+        const response = await axiosIntance.get("/travel-stories/filter",{
+          params: {starTDate,endDate}
+        })
+      
+      
+        if(response.data && response.data.stories){
+          setFilterType("date")
+          setAllstories(response.data.stories)
+        }
+
+      }
+
+    }
+    catch(error){
+      console.log("An ocurred error. try again2")
+    }
+  }
+  
+  const handleDayClick = (day) => {
+    setDateRange(day)
+    filterStoryByDate(day)
+  }
+
+  const resetFilter = () => {
+    setDateRange({from:null,to:null})
+    setFilterType("")
+    getAllTravelsStories()
+  }
+
   useEffect(() => {
     getAllTravelsStories()
     getUserInfo()
@@ -112,12 +213,27 @@ const Home = () => {
   },[])
   return (
     <>
-       <Navbar userInfo={userInfo} /> 
+       <Navbar userInfo={userInfo}  
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+          onSearchNote={onSearchStory}
+          handleClearSearch={handleClearSearch}
+       /> 
+
 
      {/* {JSON.stringify(userInfo)} */}
      {/* {JSON.stringify(allStories)}  */}
 
       <div className='container mx-auto py-10'>
+
+        <FilterInfoTitle
+          filterType={filterType}
+          filterDates = {dateRange}
+          onClear = {() => {
+            resetFilter()
+          }}
+        />
+
         <div className='flex gap-7'>
           <div className='flex-1'>
             {allStories.length > 0 ? (
@@ -141,12 +257,26 @@ const Home = () => {
                 })}
               </div>
             ) : (
-              <>Empty Card here</>
+              <EmtyCard 
+                imgSrc={getEmptyCardImg(filterType)} 
+                message = {getEmptyCardMessage(filterType)}
+              />
             )}
              {/* {JSON.stringify(allStories)}  */}
           </div> 
-          <div className='w-[320px]'>
+          <div className='w-[350px]'>
+            <div className='bg-white border border-slate-200 shadow-lg shadow-slate-200/60 rounded-lg'>
+              <div className='p-3'>
+                <DayPicker
+                  captionLayout='dropdown-buttons'
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={handleDayClick}
+                  pagedNavigation
+                />
+              </div>
 
+            </div>
           </div>
 
         </div>
@@ -197,7 +327,9 @@ const Home = () => {
             setOpenViewModel((prevState) => ({...prevState,isShown:false}))
             handleEdit(openViewModel.data || null)
           }}
-          onDeleteClick={() => {}}
+          onDeleteClick={() => {
+            deleteTravelStory(openViewModel.data || null)
+          }}
         />
       </Modal>
 
